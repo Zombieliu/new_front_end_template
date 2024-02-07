@@ -2,7 +2,19 @@ import "@repo/ui/globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
+import { createNetworkConfig, SuiClientProvider, WalletProvider } from '@mysten/dapp-kit';
+import {getFullnodeUrl, type SuiClientOptions } from '@mysten/sui.js/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+
 const inter = Inter({ subsets: ["latin"] });
+
+const {networkConfig} = createNetworkConfig({
+  localnet: {url: getFullnodeUrl('localnet')},
+  mainnet: {url: getFullnodeUrl('mainnet')},
+});
+
+const queryClient = new QueryClient();
 
 export const metadata: Metadata = {
   title: "Docs",
@@ -16,7 +28,15 @@ export default function RootLayout({
 }): JSX.Element {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+      <QueryClientProvider client={queryClient}>
+        <SuiClientProvider networks={networkConfig} defaultNetwork="localnet">
+          <WalletProvider >
+              {children}
+          </WalletProvider>
+        </SuiClientProvider>
+      </QueryClientProvider>
+      </body>
     </html>
   );
 }
